@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.utils import timezone
+from django.utils.text import slugify
 
 
 class CustomUser(AbstractUser):
@@ -22,10 +24,21 @@ class CustomUser(AbstractUser):
 # It ensures that the entered value is a valid URL format
 # before saving to the database.
 
+# Slug:
 # A SlugField is essentially a CharField
 # that's specifically designed to store URL-friendly strings containing
 # only letters, numbers, underscores, or hyphens.
 # It's commonly used for creating clean, readable URLs.
+
+# Common Usage Pattern
+# This field configuration is typically used when:
+# You want to auto-generate slugs from other fields (like a title)
+# You don't want to require manual slug entry in forms
+# You need each slug to be unique for URL routing
+# You want to allow the slug to be empty initially
+# and populate it programmatically
+# For example, in a typical blog entry URL:
+# https://www.geeksforgeeks.org/python/add-the-slug-field-inside-django-model/
 
 
 class Blog(models.Model):
@@ -50,8 +63,42 @@ class Blog(models.Model):
     published_time = models.DateTimeField(blank=True, null=True)
     is_draft = models.BooleanField(default=True)
     category = models.CharField(max_length=255, choices=CATEGORY, blank=True, null=True)
-    featured_image=models.ImageField(upload_to="blog_img",blank=True,null=True)
+    featured_image = models.ImageField(upload_to="blog_img", blank=True, null=True)
 
+    class Meta:
+        ordering = ["-published_time"]
+
+    def __str__(self):
+        return self.title
+
+    def save(self, *args, **kwargs):
+        base_slug = slugify(self.title)
+        slug = base_slug
+        num = 1
+        while Blog.objects.filter(slug=slug).exists():
+            slug = f"{base_slug}-{num}"
+            num += 1
+        self.slug = slug
+
+        if not self.is_draft and self.published_time is None:
+            self.published_time = timezone.now()
+
+        super().save(*args, **kwargs)
+
+
+# class Meta:
+#     ordering = ['-published_time', 'title']  # Newest first, then alphabetically by title
+
+# The class Meta:
+# with ordering = ["-published_time"] is a Django model metadata configuration
+# that defines the default ordering behavior for database queries on this model.
+
+# super().save(*args, **kwargs):
+# The super().save(*args, **kwargs) is a critical call in Django
+# when overriding the model's save() method.
+# This line calls the parent class's (Model) original save method,
+# which performs the actual database operation.
+# Without this call, your data won't be saved to the database
 
 
 # Your approach (works but not recommended):
