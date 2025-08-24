@@ -87,7 +87,10 @@ class Blog(models.Model):
 
 
 # class Meta:
-#     ordering = ['-published_time', 'title']  # Newest first, then alphabetically by title
+#     ordering = ['-published_time', 'title']
+#
+# # Newest first,
+# then alphabetically by title
 
 # The class Meta:
 # with ordering = ["-published_time"] is a Django model metadata configuration
