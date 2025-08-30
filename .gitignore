@@ -12,8 +12,16 @@ db.sqlite3
 # Ignore Django migration files (optional)
 */migrations/*.pyc
 */migrations/__pycache__/
+*/migrations/
+!*/migrations/__init__.py
+**/__init__.py
+
 
 # Ignore Python cache files
 __pycache__/
 *.py[cod]
 *$py.class
+
+
+# Media files
+media/
