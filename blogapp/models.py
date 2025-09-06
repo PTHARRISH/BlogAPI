@@ -11,7 +11,7 @@ class CustomUser(AbstractUser):
         upload_to="profile_image", blank=True, null=True
     )
     facebook = models.URLField(max_length=255, blank=True, null=True)
-    yotube = models.URLField(max_length=255, blank=True, null=True)
+    youtube = models.URLField(max_length=255, blank=True, null=True)
     twitter = models.URLField(max_length=255, blank=True, null=True)
     instagram = models.URLField(max_length=255, blank=True, null=True)
 

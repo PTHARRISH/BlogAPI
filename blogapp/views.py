@@ -1,11 +1,20 @@
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from blogapp.serializers import BlogSerializer, UserRegistrationSerializer
+from blogapp.serializers import (
+    BlogSerializer,
+    UserProfileUpdateSerializer,
+    UserRegistrationSerializer,
+)
 
 from .models import Blog
+
+
+class BlogListpagination(PageNumberPagination):
+    page_size = 3
 
 
 # Create your views here.
@@ -15,6 +24,17 @@ def register_user(request):
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["PUT"])
+@permission_classes([IsAuthenticated])
+def update_user_profile(request):
+    user = request.user
+    serializer = UserProfileUpdateSerializer(user, data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -32,8 +52,10 @@ def create_blog(request):
 @api_view(["GET"])
 def blog_list(request):
     blogs = Blog.objects.all()
-    serializer = BlogSerializer(blogs, many=True)
-    return Response(serializer.data)
+    paginator = BlogListpagination()
+    paginated_blogs = paginator.paginate_queryset(blogs, request)
+    serializer = BlogSerializer(paginated_blogs, many=True)
+    return paginator.get_paginated_response(serializer.data)
 
 
 @api_view(["POST"])
@@ -46,8 +68,29 @@ def update_blog(request, pk):
             {"Error": "Your are not authorized person of the Blog"},
             status=status.HTTP_403_FORBIDDEN,
         )
-    serializer=BlogSerializer(blog,data=request.data)
+    serializer = BlogSerializer(blog, data=request.data)
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def delete_blog(request, pk):
+    user = request.user
+    blog = Blog.objects.get(id=pk)
+    blog_data = BlogSerializer(blog).data
+    if blog.author != user:
+        return Response(
+            {"Error": "Your are not authorized person of the Blog"},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+    blog.delete()
+    return Response(
+        {
+            "message": "Blog Deleted Successfully",
+            "data": blog_data,
+            "status": status.HTTP_200_OK,
+        }
+    )

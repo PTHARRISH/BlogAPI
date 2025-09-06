@@ -7,7 +7,17 @@ from .models import Blog, CustomUser
 
 
 class CustomUserAdmin(UserAdmin):
-    list_display = ("username", "email", "first_name", "last_name")
+    list_display = (
+        "username",
+        "first_name",
+        "last_name",
+        "bio",
+        "profile_picture",
+        "facebook",
+        "youtube",
+        "twitter",
+        "instagram",
+    )
 
 
 class BlogAdmin(admin.ModelAdmin):

@@ -4,6 +4,24 @@ from rest_framework import serializers
 from .models import Blog
 
 
+class UserProfileUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = get_user_model()
+        fields = [
+            "id",
+            "email",
+            "username",
+            "first_name",
+            "last_name",
+            "bio",
+            "profile_picture",
+            "facebook",
+            "youtube",
+            "twitter",
+            "instagram",
+        ]
+
+
 class UserRegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = get_user_model()
@@ -26,7 +44,6 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
 
 class SimpleAuthorSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = get_user_model()
         fields = ["id", "username", "first_name", "last_name"]
